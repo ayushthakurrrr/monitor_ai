@@ -1,8 +1,7 @@
 'use client'
 
-import { useEffect, useState, useTransition } from 'react'
+import { useEffect, useState, useTransition, useActionState } from 'react'
 import { FilePenLine, PlusCircle, Trash2, Users } from 'lucide-react'
-import { useFormState } from 'react-dom'
 
 import {
   addInfluencerAction,
@@ -56,7 +55,7 @@ function InfluencerForm({ influencer, onFormSubmit }: { influencer?: Influencer 
     const action = influencer 
         ? updateInfluencerAction.bind(null, influencer.id) 
         : addInfluencerAction;
-    const [state, formAction] = useFormState(action, initialState);
+    const [state, formAction] = useActionState(action, initialState);
 
     useEffect(() => {
         if (state?.message) {
