@@ -1,7 +1,7 @@
 'use server'
 
 import { z } from 'zod'
-import { addInfluencer, deleteInfluencer, updateInfluencer } from '@/lib/data'
+import { addInfluencer, deleteInfluencer, updateInfluencer, getInfluencers, type Influencer } from '@/lib/data'
 import { revalidatePath } from 'next/cache'
 
 const influencerSchema = z.object({
@@ -9,6 +9,11 @@ const influencerSchema = z.object({
   handle: z.string().min(2, { message: 'Handle must be at least 2 characters.' }),
   channelId: z.string().min(2, { message: 'Channel ID must be at least 2 characters.' }),
 })
+
+export async function getInfluencersAction(): Promise<Influencer[]> {
+  const influencers = await getInfluencers()
+  return JSON.parse(JSON.stringify(influencers));
+}
 
 export async function addInfluencerAction(prevState: any, formData: FormData) {
   const validatedFields = influencerSchema.safeParse({

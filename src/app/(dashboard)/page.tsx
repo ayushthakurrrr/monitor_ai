@@ -5,7 +5,6 @@ import { format, parseISO } from "date-fns"
 import { Loader2, Newspaper, Sparkles } from "lucide-react"
 
 import type { Influencer, Post, Trend } from "@/lib/data"
-import { getInfluencers, getLatestTrend, getPosts } from "@/lib/data"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -16,7 +15,7 @@ import {
   CardFooter
 } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { generateTrendBriefAction } from "./actions"
+import { generateTrendBriefAction, getDashboardDataAction } from "./actions"
 import { useToast } from "@/hooks/use-toast"
 
 
@@ -29,20 +28,17 @@ export default function DashboardPage() {
   const [influencers, setInfluencers] = useState<Influencer[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
+  const fetchDashboardData = async () => {
+    setIsLoading(true);
+    const { trend, posts, influencers } = await getDashboardDataAction();
+    setTrend(trend);
+    setPosts(posts);
+    setInfluencers(influencers);
+    setIsLoading(false);
+  }
+
   useEffect(() => {
-    async function fetchData() {
-      setIsLoading(true)
-      const [trendData, postsData, influencersData] = await Promise.all([
-        getLatestTrend(),
-        getPosts(),
-        getInfluencers(),
-      ])
-      setTrend(trendData)
-      setPosts(postsData)
-      setInfluencers(influencersData)
-      setIsLoading(false)
-    }
-    fetchData()
+    fetchDashboardData()
   }, [])
 
   const handleGenerateBrief = () => {
@@ -59,8 +55,9 @@ export default function DashboardPage() {
           title: 'Success',
           description: 'New trend brief generated.',
         })
-        const newTrend = await getLatestTrend()
-        setTrend(newTrend)
+        if (result.trend) {
+            setTrend(result.trend)
+        }
       }
     })
   }

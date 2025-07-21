@@ -7,10 +7,10 @@ import { useFormState } from 'react-dom'
 import {
   addInfluencerAction,
   deleteInfluencerAction,
-  updateInfluencerAction
+  updateInfluencerAction,
+  getInfluencersAction
 } from './actions'
 import type { Influencer } from '@/lib/data'
-import { getInfluencers } from '@/lib/data'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -108,7 +108,7 @@ export default function InfluencersPage() {
 
   const fetchAndSetInfluencers = async () => {
     setIsLoading(true)
-    const data = await getInfluencers()
+    const data = await getInfluencersAction()
     setInfluencers(data)
     setIsLoading(false)
   }
