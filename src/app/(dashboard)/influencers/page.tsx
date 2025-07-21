@@ -81,6 +81,11 @@ function InfluencerForm({ influencer, onFormSubmit }: { influencer?: Influencer 
                     <Input id="handle" name="handle" defaultValue={influencer?.handle} className="col-span-3" />
                 </div>
                  {state.errors?.handle && <p className="text-sm text-destructive col-start-2 col-span-3">{state.errors.handle[0]}</p>}
+                 <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="channelId" className="text-right">Channel ID</Label>
+                    <Input id="channelId" name="channelId" defaultValue={influencer?.channelId} className="col-span-3" />
+                </div>
+                 {state.errors?.channelId && <p className="text-sm text-destructive col-start-2 col-span-3">{state.errors.channelId[0]}</p>}
             </div>
             <DialogFooter>
                 <DialogClose asChild>
@@ -119,6 +124,7 @@ export default function InfluencersPage() {
         toast({ variant: 'destructive', title: 'Error', description: result.error })
       } else {
         toast({ title: 'Success', description: result.message })
+        fetchAndSetInfluencers();
       }
     }
   }
@@ -126,6 +132,7 @@ export default function InfluencersPage() {
   const handleFormSubmit = () => {
     setIsFormOpen(false);
     setEditingInfluencer(null);
+    fetchAndSetInfluencers();
   };
 
   const openAddDialog = () => {
@@ -168,6 +175,7 @@ export default function InfluencersPage() {
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead>YouTube Handle</TableHead>
+              <TableHead>Channel ID</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -176,6 +184,7 @@ export default function InfluencersPage() {
               Array.from({ length: 4 }).map((_, i) => (
                 <TableRow key={i}>
                   <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                   <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                   <TableCell className="text-right space-x-2">
                     <Skeleton className="h-8 w-8 inline-block" />
@@ -188,6 +197,7 @@ export default function InfluencersPage() {
                 <TableRow key={influencer.id}>
                   <TableCell className="font-medium">{influencer.name}</TableCell>
                   <TableCell>{influencer.handle}</TableCell>
+                  <TableCell>{influencer.channelId}</TableCell>
                   <TableCell className="text-right space-x-2">
                     <Button variant="ghost" size="icon" onClick={() => openEditDialog(influencer)}>
                       <FilePenLine className="h-4 w-4" />
@@ -200,7 +210,7 @@ export default function InfluencersPage() {
               ))
             ) : (
                 <TableRow>
-                    <TableCell colSpan={3} className="text-center">No influencers found.</TableCell>
+                    <TableCell colSpan={4} className="text-center">No influencers found. Add one to get started.</TableCell>
                 </TableRow>
             )}
           </TableBody>

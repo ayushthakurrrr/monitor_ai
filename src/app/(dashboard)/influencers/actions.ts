@@ -7,12 +7,14 @@ import { revalidatePath } from 'next/cache'
 const influencerSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
   handle: z.string().min(2, { message: 'Handle must be at least 2 characters.' }),
+  channelId: z.string().min(2, { message: 'Channel ID must be at least 2 characters.' }),
 })
 
 export async function addInfluencerAction(prevState: any, formData: FormData) {
   const validatedFields = influencerSchema.safeParse({
     name: formData.get('name'),
     handle: formData.get('handle'),
+    channelId: formData.get('channelId'),
   })
 
   if (!validatedFields.success) {
@@ -34,6 +36,7 @@ export async function updateInfluencerAction(id: string, prevState: any, formDat
   const validatedFields = influencerSchema.safeParse({
     name: formData.get('name'),
     handle: formData.get('handle'),
+    channelId: formData.get('channelId'),
   })
 
   if (!validatedFields.success) {

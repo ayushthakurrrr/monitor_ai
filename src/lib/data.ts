@@ -1,7 +1,11 @@
+import { connectToDatabase } from "./mongodb";
+import { ObjectId } from "mongodb";
+
 export interface Influencer {
   id: string;
   name: string;
   handle: string;
+  channelId: string;
 }
 
 export interface Post {
@@ -18,102 +22,80 @@ export interface Trend {
   createdAt: string;
 }
 
-let influencers: Influencer[] = [
-  { id: '1', name: 'Marques Brownlee', handle: '@mkbhd' },
-  { id: '2', name: 'iJustine', handle: '@ijustine' },
-  { id: '3', name: 'Linus Tech Tips', handle: '@linustech' },
-  { id: '4', name: 'MrWhoseTheBoss', handle: '@mrwhosetheboss' },
-];
-
-let posts: Post[] = [
-  {
-    id: '1',
-    influencerId: '1',
-    title: 'The State of Foldable Phones in 2024!',
-    publishedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    transcript: 'So, foldable phones. They have been around for a few years now, and the technology is finally maturing. The creases are less noticeable, the software is getting better at handling the different form factors. I think 2024 is the year they go mainstream.',
-  },
-  {
-    id: '2',
-    influencerId: '2',
-    title: 'My New AI-Powered Smart Home Setup',
-    publishedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    transcript: 'I have fully automated my house with AI. The lights adjust to my mood, the coffee starts brewing when my alarm goes off. It is kind of creepy but also incredibly convenient. The biggest trend in smart homes right now is proactive assistance, where the AI anticipates your needs.',
-  },
-  {
-    id: '3',
-    influencerId: '3',
-    title: 'We Water-Cooled a Toaster. For Science.',
-    publishedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    transcript: 'This might seem crazy, but we wanted to see if liquid cooling could make the perfect toast. Spoiler: it did not. But we learned a lot about thermal dynamics. The key takeaway is that sometimes the most ridiculous ideas lead to interesting discoveries.',
-  },
-  {
-    id: '4',
-    influencerId: '4',
-    title: 'Is AI Overrated? A Deep Dive.',
-    publishedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    transcript: 'Everyone is talking about AI, AI, AI. But how much of it is genuine innovation versus marketing hype? In this video, we break down the real-world applications of AI today and what is still science fiction. The biggest trend is definitely generative AI, but practical implementation is still catching up.',
-  },
-];
-
-let trends: Trend[] = [
-    {
-        id: '1',
-        summary: 'Based on recent content, there is a strong focus on the practical applications and maturity of new technologies. Influencers are discussing how AI, particularly generative AI, is moving from hype to real-world implementation in areas like smart homes. Foldable phones are also highlighted as a maturing category poised for mainstream adoption in 2024. A recurring theme is the exploration of technology limits, even through unconventional experiments.',
-        createdAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
-    }
-]
-
-// Simulate DB calls
-export const getInfluencers = async (): Promise<Influencer[]> => {
-  return Promise.resolve(influencers);
+const mapMongoDoc = (doc: any) => {
+  if (!doc) return null;
+  const { _id, ...rest } = doc;
+  return { id: _id.toHexString(), ...rest };
 };
 
-export const getInfluencerById = async (id: string): Promise<Influencer | undefined> => {
-  return Promise.resolve(influencers.find(inf => inf.id === id));
+export const getInfluencers = async (): Promise<Influencer[]> => {
+  const db = await connectToDatabase();
+  const influencers = await db.collection("influencers").find({}).toArray();
+  return influencers.map(mapMongoDoc) as Influencer[];
+};
+
+export const getInfluencerById = async (id: string): Promise<Influencer | null> => {
+  if (!ObjectId.isValid(id)) return null;
+  const db = await connectToDatabase();
+  const influencer = await db.collection("influencers").findOne({ _id: new ObjectId(id) });
+  return mapMongoDoc(influencer) as Influencer | null;
 };
 
 export const addInfluencer = async (influencer: Omit<Influencer, 'id'>): Promise<Influencer> => {
-  const newInfluencer = { ...influencer, id: (Math.random() * 10000).toString() };
-  influencers = [...influencers, newInfluencer];
-  return Promise.resolve(newInfluencer);
+  const db = await connectToDatabase();
+  const result = await db.collection("influencers").insertOne(influencer);
+  return { ...influencer, id: result.insertedId.toHexString() };
 };
 
-export const updateInfluencer = async (id: string, data: Partial<Influencer>): Promise<Influencer | undefined> => {
-    let influencerToUpdate = influencers.find(inf => inf.id === id);
-    if(influencerToUpdate){
-        influencerToUpdate = {...influencerToUpdate, ...data};
-        influencers = influencers.map(inf => inf.id === id ? influencerToUpdate : inf);
-        return Promise.resolve(influencerToUpdate);
-    }
-    return Promise.resolve(undefined);
+export const updateInfluencer = async (id: string, data: Partial<Omit<Influencer, 'id'>>): Promise<Influencer | undefined> => {
+    if (!ObjectId.isValid(id)) return undefined;
+    const db = await connectToDatabase();
+    const result = await db.collection("influencers").findOneAndUpdate(
+      { _id: new ObjectId(id) },
+      { $set: data },
+      { returnDocument: 'after' }
+    );
+    return mapMongoDoc(result) as Influencer | undefined;
 };
-
 
 export const deleteInfluencer = async (id: string): Promise<void> => {
-  influencers = influencers.filter((inf) => inf.id !== id);
-  return Promise.resolve();
+  if (!ObjectId.isValid(id)) return;
+  const db = await connectToDatabase();
+  await db.collection("influencers").deleteOne({ _id: new ObjectId(id) });
+  // Also delete posts associated with this influencer
+  await db.collection("posts").deleteMany({ influencerId: id });
 };
 
 export const getPosts = async (): Promise<Post[]> => {
-  return Promise.resolve(posts);
+  const db = await connectToDatabase();
+  const posts = await db.collection("posts").find({}).sort({ publishedAt: -1 }).toArray();
+  return posts.map(mapMongoDoc) as Post[];
 };
 
 export const getAllTranscripts = async (): Promise<string> => {
-  const all = posts.map(p => `Content from ${influencers.find(i => i.id === p.influencerId)?.name || 'Unknown'}: ${p.transcript}`).join('\n\n');
-  return Promise.resolve(all);
+  const allPosts = await getPosts();
+  if (allPosts.length === 0) return "";
+  
+  const allInfluencers = await getInfluencers();
+  const influencerMap = new Map(allInfluencers.map(i => [i.id, i.name]));
+
+  const transcripts = allPosts.map(p => `Content from ${influencerMap.get(p.influencerId) || 'Unknown'}: ${p.transcript}`).join('\n\n');
+  return transcripts;
 };
 
-export const getLatestTrend = async (): Promise<Trend | undefined> => {
-    return Promise.resolve(trends.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]);
-}
+export const getLatestTrend = async (): Promise<Trend | null> => {
+  const db = await connectToDatabase();
+  const latestTrend = await db.collection("trends").find().sort({ createdAt: -1 }).limit(1).toArray();
+  if (latestTrend.length === 0) return null;
+  return mapMongoDoc(latestTrend[0]) as Trend | null;
+};
 
 export const addTrend = async (summary: string): Promise<Trend> => {
-    const newTrend: Trend = {
-        id: (Math.random() * 10000).toString(),
-        summary,
-        createdAt: new Date().toISOString()
-    }
-    trends.push(newTrend);
-    return Promise.resolve(newTrend);
-}
+  const db = await connectToDatabase();
+  const newTrend = {
+    summary,
+    createdAt: new Date().toISOString()
+  };
+  const result = await db.collection("trends").insertOne(newTrend);
+  return { ...newTrend, id: result.insertedId.toHexString() };
+};
