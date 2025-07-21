@@ -18,7 +18,7 @@ export interface Post {
   /** The title of the post (e.g., YouTube video title). */
   title: string;
   /** The publication date of the post in ISO 8601 format string. */
-  publishedAt: string;
+  isoDate: string;
   /** The URL link to the original post/video. */
   link?: string;
   /** The transcript or summary of the post's content. */
@@ -87,7 +87,7 @@ export const deleteInfluencer = async (id: string): Promise<DeleteResult> => {
 
 export const getPosts = async (): Promise<Post[]> => {
   const db = await connectToDatabase();
-  const posts = await db.collection("posts").find({}).sort({ publishedAt: -1 }).limit(20).toArray();
+  const posts = await db.collection("posts").find({}).sort({ isoDate: -1 }).limit(20).toArray();
   return posts.map(mapMongoDoc) as Post[];
 };
 

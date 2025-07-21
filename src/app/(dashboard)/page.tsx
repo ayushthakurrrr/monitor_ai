@@ -72,7 +72,7 @@ export default function DashboardPage() {
         <CardTitle className="text-lg">{post.title}</CardTitle>
         <CardDescription>
           By {getInfluencerName(post.channelId)} on{" "}
-          {format(parseISO(post.publishedAt), "MMM d, yyyy")}
+          {format(parseISO(post.isoDate), "MMM d, yyyy")}
         </CardDescription>
       </CardHeader>
     );
