@@ -62,10 +62,14 @@ export async function updateInfluencerAction(id: string, prevState: any, formDat
 
 export async function deleteInfluencerAction(id: string) {
   try {
-    await deleteInfluencer(id)
+    const result = await deleteInfluencer(id)
+    if (result.deletedCount === 0) {
+        return { error: 'Failed to delete influencer.' }
+    }
     revalidatePath('/influencers')
     return { message: 'Influencer deleted successfully.' }
   } catch (error) {
+    console.error(error)
     return { error: 'Failed to delete influencer.' }
   }
 }

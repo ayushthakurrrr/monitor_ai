@@ -1,7 +1,7 @@
 'use server'
 
 import { connectToDatabase } from "./mongodb";
-import { ObjectId } from "mongodb";
+import { ObjectId, type DeleteResult } from "mongodb";
 
 export interface Influencer {
   id: string;
@@ -60,12 +60,12 @@ export const updateInfluencer = async (id: string, data: Partial<Omit<Influencer
     return mapMongoDoc(result) as Influencer | undefined;
 };
 
-export const deleteInfluencer = async (id: string): Promise<void> => {
-  if (!ObjectId.isValid(id)) return;
+export const deleteInfluencer = async (id: string): Promise<DeleteResult> => {
+  if (!ObjectId.isValid(id)) return { acknowledged: false, deletedCount: 0 };
   const db = await connectToDatabase();
-  await db.collection("influencers").deleteOne({ _id: new ObjectId(id) });
   // Also delete posts associated with this influencer
   await db.collection("posts").deleteMany({ influencerId: id });
+  return await db.collection("influencers").deleteOne({ _id: new ObjectId(id) });
 };
 
 export const getPosts = async (): Promise<Post[]> => {
