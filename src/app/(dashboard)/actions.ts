@@ -1,20 +1,6 @@
 'use server'
 
-import { summarizeTrends } from "@/ai/flows/trend-summarization";
-import { addTrend, getInfluencers, getLatestTrend, getPosts, type Influencer, type Post, type Trend } from "@/lib/data";
-import { revalidatePath } from "next/cache";
-
-export async function generateTrendBriefAction() {
-    try {
-        const result = await summarizeTrends();
-        const newTrend = await addTrend(result.trendSummary);
-        revalidatePath('/');
-        return { success: true, trend: JSON.parse(JSON.stringify(newTrend)) };
-    } catch (error) {
-        console.error(error);
-        return { error: 'Failed to generate trend brief.' };
-    }
-}
+import { getInfluencers, getLatestTrend, getPosts, type Influencer, type Post, type Trend } from "@/lib/data";
 
 export async function getDashboardDataAction(): Promise<{trend: Trend | null | undefined, posts: Post[], influencers: Influencer[]}> {
     const [trendData, postsData, influencersData] = await Promise.all([

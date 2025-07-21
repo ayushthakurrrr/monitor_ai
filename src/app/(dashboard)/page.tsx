@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react"
 import { format, parseISO } from "date-fns"
-import { Loader2, Newspaper, Sparkles, ExternalLink } from "lucide-react"
+import { Newspaper, Sparkles, ExternalLink } from "lucide-react"
 
 import type { Influencer, Post, Trend } from "@/lib/data"
 import { Button } from "@/components/ui/button"
@@ -15,14 +15,9 @@ import {
   CardFooter
 } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { generateTrendBriefAction, getDashboardDataAction } from "./actions"
-import { useToast } from "@/hooks/use-toast"
-
+import { getDashboardDataAction } from "./actions"
 
 export default function DashboardPage() {
-  const [isPending, startTransition] = useTransition()
-  const { toast } = useToast()
-
   const [trend, setTrend] = useState<Trend | null | undefined>(undefined)
   const [posts, setPosts] = useState<Post[]>([])
   const [influencers, setInfluencers] = useState<Influencer[]>([])
@@ -41,26 +36,6 @@ export default function DashboardPage() {
     fetchDashboardData()
   }, [])
 
-  const handleGenerateBrief = () => {
-    startTransition(async () => {
-      const result = await generateTrendBriefAction()
-      if (result.error) {
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: result.error,
-        })
-      } else {
-        toast({
-          title: 'Success',
-          description: 'New trend brief generated.',
-        })
-        if (result.trend) {
-            setTrend(result.trend)
-        }
-      }
-    })
-  }
 
   const getInfluencerName = (channelId: string) => {
     return influencers.find((i) => i.channelId === channelId)?.name || "Unknown Influencer"
@@ -121,20 +96,10 @@ export default function DashboardPage() {
              </div>
           ) : (
             <p className="text-muted-foreground">
-              {trend?.summary ?? 'Click the button below to generate the first trend brief.'}
+              {trend?.summary ?? 'No trend brief available. New trends are generated periodically.'}
             </p>
           )}
         </CardContent>
-        <CardFooter>
-            <Button onClick={handleGenerateBrief} disabled={isPending}>
-                {isPending ? (
-                    <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Generating...
-                    </>
-                ) : "Generate New Brief"}
-            </Button>
-        </CardFooter>
       </Card>
 
       <div>

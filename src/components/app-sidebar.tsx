@@ -33,7 +33,7 @@ export function AppSidebar() {
     },
     {
       href: "/chatbot",
-      label: "Content Q&A",
+      label: "AI Chatbot",
       icon: BotMessageSquare,
     },
   ]
