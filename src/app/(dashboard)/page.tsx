@@ -62,8 +62,8 @@ export default function DashboardPage() {
     })
   }
 
-  const getInfluencerName = (influencerId: string) => {
-    return influencers.find((i) => i.id === influencerId)?.name || "Unknown Influencer"
+  const getInfluencerName = (channelId: string) => {
+    return influencers.find((i) => i.channelId === channelId)?.name || "Unknown Influencer"
   }
   
   const PostCard = ({ post }: { post: Post }) => {
@@ -71,7 +71,7 @@ export default function DashboardPage() {
       <CardHeader>
         <CardTitle className="text-lg">{post.title}</CardTitle>
         <CardDescription>
-          By {getInfluencerName(post.influencerId)} on{" "}
+          By {getInfluencerName(post.channelId)} on{" "}
           {format(parseISO(post.publishedAt), "MMM d, yyyy")}
         </CardDescription>
       </CardHeader>
