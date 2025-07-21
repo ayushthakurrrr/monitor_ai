@@ -19,8 +19,10 @@ export interface Post {
   title: string;
   /** The publication date of the post in ISO 8601 format string. */
   publishedAt: string;
+  /** The URL link to the original post/video. */
+  link?: string;
   /** The transcript or summary of the post's content. */
-  transcript: string;
+  transcript?: string;
 }
 
 export interface Trend {
@@ -68,8 +70,10 @@ export const updateInfluencer = async (id: string, data: Partial<Omit<Influencer
 export const deleteInfluencer = async (id: string): Promise<DeleteResult> => {
     if (!ObjectId.isValid(id)) return { acknowledged: false, deletedCount: 0 };
     const db = await connectToDatabase();
+    
     // Also delete posts associated with this influencer.
     await db.collection("posts").deleteMany({ influencerId: id });
+    
     // Now delete the influencer.
     return await db.collection("influencers").deleteOne({ _id: new ObjectId(id) });
 };
@@ -87,7 +91,9 @@ export const getAllTranscripts = async (): Promise<string> => {
   const allInfluencers = await getInfluencers();
   const influencerMap = new Map(allInfluencers.map(i => [i.id, i.name]));
 
-  const transcripts = allPosts.map(p => `Content from ${influencerMap.get(p.influencerId) || 'Unknown'}: ${p.transcript}`).join('\n\n');
+  const transcripts = allPosts
+    .filter(p => p.transcript)
+    .map(p => `Content from ${influencerMap.get(p.influencerId) || 'Unknown'}: ${p.transcript}`).join('\n\n');
   return transcripts;
 };
 

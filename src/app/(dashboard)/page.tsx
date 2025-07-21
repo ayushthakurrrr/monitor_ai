@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react"
 import { format, parseISO } from "date-fns"
-import { Loader2, Newspaper, Sparkles } from "lucide-react"
+import { Loader2, Newspaper, Sparkles, ExternalLink } from "lucide-react"
 
 import type { Influencer, Post, Trend } from "@/lib/data"
 import { Button } from "@/components/ui/button"
@@ -65,6 +65,39 @@ export default function DashboardPage() {
   const getInfluencerName = (influencerId: string) => {
     return influencers.find((i) => i.id === influencerId)?.name || "Unknown Influencer"
   }
+  
+  const PostCard = ({ post }: { post: Post }) => {
+    const cardContent = (
+      <CardHeader>
+        <CardTitle className="text-lg">{post.title}</CardTitle>
+        <CardDescription>
+          By {getInfluencerName(post.influencerId)} on{" "}
+          {format(parseISO(post.publishedAt), "MMM d, yyyy")}
+        </CardDescription>
+      </CardHeader>
+    );
+  
+    if (post.link) {
+      return (
+        <a href={post.link} target="_blank" rel="noopener noreferrer" className="block hover:shadow-xl transition-shadow duration-300 rounded-lg">
+          <Card className="shadow-md flex flex-col justify-between h-full group">
+            {cardContent}
+            <CardFooter>
+              <Button variant="ghost" size="sm" className="text-accent group-hover:underline">
+                View Post <ExternalLink className="ml-2 h-4 w-4" />
+              </Button>
+            </CardFooter>
+          </Card>
+        </a>
+      );
+    }
+  
+    return (
+        <Card className="shadow-md flex flex-col justify-between h-full">
+            {cardContent}
+        </Card>
+    );
+  };
 
   return (
     <div className="grid gap-6">
@@ -121,15 +154,7 @@ export default function DashboardPage() {
             ))
           ) : posts.length > 0 ? (
             posts.map((post) => (
-              <Card key={post.id} className="shadow-md flex flex-col justify-between">
-                <CardHeader>
-                  <CardTitle className="text-lg">{post.title}</CardTitle>
-                  <CardDescription>
-                    By {getInfluencerName(post.influencerId)} on{" "}
-                    {format(parseISO(post.publishedAt), "MMM d, yyyy")}
-                  </CardDescription>
-                </CardHeader>
-              </Card>
+              <PostCard key={post.id} post={post} />
             ))
           ) : (
             <p>No recent posts found.</p>
