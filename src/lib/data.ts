@@ -32,7 +32,7 @@ const mapMongoDoc = (doc: any) => {
 
 export const getInfluencers = async (): Promise<Influencer[]> => {
   const db = await connectToDatabase();
-  const influencers = await db.collection("influencers").find({}).toArray();
+  const influencers = await db.collection("influencers").find({}).sort({ name: 1 }).toArray();
   return influencers.map(mapMongoDoc) as Influencer[];
 };
 
@@ -63,14 +63,16 @@ export const updateInfluencer = async (id: string, data: Partial<Omit<Influencer
 export const deleteInfluencer = async (id: string): Promise<DeleteResult> => {
   if (!ObjectId.isValid(id)) return { acknowledged: false, deletedCount: 0 };
   const db = await connectToDatabase();
-  // Also delete posts associated with this influencer
+  // Also delete posts associated with this influencer.
+  // The influencerId on posts is stored as a string, not an ObjectId, so we match on that.
   await db.collection("posts").deleteMany({ influencerId: id });
+  // Now delete the influencer.
   return await db.collection("influencers").deleteOne({ _id: new ObjectId(id) });
 };
 
 export const getPosts = async (): Promise<Post[]> => {
   const db = await connectToDatabase();
-  const posts = await db.collection("posts").find({}).sort({ publishedAt: -1 }).toArray();
+  const posts = await db.collection("posts").find({}).sort({ publishedAt: -1 }).limit(20).toArray();
   return posts.map(mapMongoDoc) as Post[];
 };
 
