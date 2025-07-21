@@ -13,6 +13,17 @@ import type { Influencer } from '@/lib/data'
 
 import { Button } from '@/components/ui/button'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -117,14 +128,12 @@ export default function InfluencersPage() {
   }, [])
 
   const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this influencer?')) {
-      const result = await deleteInfluencerAction(id)
-      if (result.error) {
-        toast({ variant: 'destructive', title: 'Error', description: result.error })
-      } else {
-        toast({ title: 'Success', description: result.message })
-        fetchAndSetInfluencers();
-      }
+    const result = await deleteInfluencerAction(id)
+    if (result.error) {
+      toast({ variant: 'destructive', title: 'Error', description: result.error })
+    } else {
+      toast({ title: 'Success', description: result.message })
+      fetchAndSetInfluencers();
     }
   }
   
@@ -201,9 +210,31 @@ export default function InfluencersPage() {
                     <Button variant="ghost" size="icon" onClick={() => openEditDialog(influencer)}>
                       <FilePenLine className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(influencer.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the
+                            influencer and all of their associated posts.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(influencer.id)}
+                            className="bg-destructive hover:bg-destructive/90"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </TableCell>
                 </TableRow>
               ))
