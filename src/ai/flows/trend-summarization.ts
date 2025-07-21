@@ -10,12 +10,13 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { getAllPostsForTrend } from '@/lib/data';
 
 const SummarizeTrendsInputSchema = z.object({
-  transcripts: z
+  postContext: z
     .string()
     .describe(
-      'A string containing the concatenated transcripts or summaries of recent content from watched influencers.'
+      'A string containing the titles of recent content from watched influencers.'
     ),
 });
 export type SummarizeTrendsInput = z.infer<typeof SummarizeTrendsInputSchema>;
@@ -29,20 +30,21 @@ const SummarizeTrendsOutputSchema = z.object({
 });
 export type SummarizeTrendsOutput = z.infer<typeof SummarizeTrendsOutputSchema>;
 
-export async function summarizeTrends(input: SummarizeTrendsInput): Promise<SummarizeTrendsOutput> {
-  return summarizeTrendsFlow(input);
+export async function summarizeTrends(): Promise<SummarizeTrendsOutput> {
+  const postContext = await getAllPostsForTrend();
+  return summarizeTrendsFlow({ postContext });
 }
 
 const prompt = ai.definePrompt({
   name: 'summarizeTrendsPrompt',
   input: {schema: SummarizeTrendsInputSchema},
   output: {schema: SummarizeTrendsOutputSchema},
-  prompt: `You are an AI agent specializing in identifying and summarizing key trends from a collection of content transcripts or summaries.\
+  prompt: `You are an AI agent specializing in identifying and summarizing key trends from a collection of content titles.\
 \
-  Your task is to analyze the provided transcripts and generate a concise report that highlights the main trends, topics, and themes that are emerging.\
+  Your task is to analyze the provided post titles and generate a concise report that highlights the main trends, topics, and themes that are emerging.\
 \
-  Transcripts:\
-  {{transcripts}}\
+  Post Titles:\
+  {{postContext}}\
 \
   Trend Report:
   `,

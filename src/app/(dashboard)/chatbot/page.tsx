@@ -56,9 +56,9 @@ export default function ChatbotPage() {
     <div className="flex h-[calc(100vh-theme(spacing.20))] flex-col">
        <div className="mb-4">
         <h1 className="font-headline text-3xl font-semibold flex items-center gap-2">
-            <BotMessageSquare /> Content Q&A Chatbot
+            <BotMessageSquare /> General AI Chatbot
         </h1>
-        <p className="text-muted-foreground mt-1">Ask questions about recent content from tracked influencers.</p>
+        <p className="text-muted-foreground mt-1">Ask me anything! I'm here to help.</p>
       </div>
 
       <div className="flex-1 overflow-hidden rounded-lg border shadow-md flex flex-col">
@@ -70,7 +70,7 @@ export default function ChatbotPage() {
                 </Avatar>
                 <div className="rounded-lg bg-muted p-3 max-w-[80%]">
                     <p className="font-semibold text-sm">TrendWatch AI</p>
-                    <p className="text-sm">Hello! How can I help you analyze today's trends?</p>
+                    <p className="text-sm">Hello! How can I help you today?</p>
                 </div>
             </div>
             {messages.map((message, index) => (
@@ -123,7 +123,7 @@ export default function ChatbotPage() {
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask about a specific topic, product, or influencer..."
+              placeholder="Ask me anything..."
               disabled={isLoading}
               className="flex-1"
             />

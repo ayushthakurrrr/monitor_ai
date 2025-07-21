@@ -1,20 +1,20 @@
 "use server"
 
-import { contentQAChatbot } from "@/ai/flows/content-qa-chatbot";
-import { getAllTranscripts } from "@/lib/data";
-
 export async function handleChatSubmit(query: string) {
     if (!query) {
         return { error: 'Please enter a question.' };
     }
 
     try {
-        const context = await getAllTranscripts();
-        if (!context) {
-            return { answer: "I don't have any content to answer questions about yet." };
-        }
+        const response = await fetch(`https://null-ai.vercel.app/api/${encodeURIComponent(query)}`);
         
-        const result = await contentQAChatbot({ query, context });
+        if (!response.ok) {
+            console.error("API Error:", response.status, await response.text());
+            return { error: 'Sorry, the AI service is currently unavailable.' };
+        }
+
+        const result = await response.json();
+        
         return { answer: result.answer };
     } catch (error) {
         console.error("Chatbot action error:", error);

@@ -74,17 +74,13 @@ export const deleteInfluencer = async (id: string): Promise<DeleteResult> => {
     if (!ObjectId.isValid(id)) return { acknowledged: false, deletedCount: 0 };
     const db = await connectToDatabase();
     
-    // Find the influencer to get their channelId
     const influencer = await db.collection("influencers").findOne({ _id: new ObjectId(id) });
     if (!influencer) {
-        // If influencer not found, maybe just return that nothing was deleted.
         return { acknowledged: true, deletedCount: 0 };
     }
 
-    // Also delete posts associated with this influencer's channelId.
     await db.collection("posts").deleteMany({ channelId: influencer.channelId });
     
-    // Now delete the influencer.
     return await db.collection("influencers").deleteOne({ _id: new ObjectId(id) });
 };
 
@@ -94,18 +90,18 @@ export const getPosts = async (): Promise<Post[]> => {
   return posts.map(mapMongoDoc) as Post[];
 };
 
-export const getAllTranscripts = async (): Promise<string> => {
+export const getAllPostsForTrend = async (): Promise<string> => {
   const allPosts = await getPosts();
   if (allPosts.length === 0) return "";
   
   const allInfluencers = await getInfluencers();
   const influencerMap = new Map(allInfluencers.map(i => [i.channelId, i.name]));
 
-  const transcripts = allPosts
-    .filter(p => p.transcript)
-    .map(p => `Content from ${influencerMap.get(p.channelId) || 'Unknown'}: ${p.transcript}`).join('\n\n');
-  return transcripts;
+  const postTitles = allPosts
+    .map(p => `Content from ${influencerMap.get(p.channelId) || 'Unknown'}: ${p.title}`).join('\n');
+  return postTitles;
 };
+
 
 export const getLatestTrend = async (): Promise<Trend | null> => {
   const db = await connectToDatabase();

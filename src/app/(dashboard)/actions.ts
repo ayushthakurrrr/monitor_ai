@@ -1,16 +1,12 @@
 'use server'
 
 import { summarizeTrends } from "@/ai/flows/trend-summarization";
-import { addTrend, getAllTranscripts, getInfluencers, getLatestTrend, getPosts, type Influencer, type Post, type Trend } from "@/lib/data";
+import { addTrend, getInfluencers, getLatestTrend, getPosts, type Influencer, type Post, type Trend } from "@/lib/data";
 import { revalidatePath } from "next/cache";
 
 export async function generateTrendBriefAction() {
     try {
-        const transcripts = await getAllTranscripts();
-        if (!transcripts) {
-            return { error: 'No transcripts available to generate a trend brief.' };
-        }
-        const result = await summarizeTrends({ transcripts });
+        const result = await summarizeTrends();
         const newTrend = await addTrend(result.trendSummary);
         revalidatePath('/');
         return { success: true, trend: JSON.parse(JSON.stringify(newTrend)) };
